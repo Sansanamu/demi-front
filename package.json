@@ -11,6 +11,13 @@
   },
   "dependencies": {
     "@types/react-responsive": "^9.0.0",
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    "lucide-react": "^0.525.0",
+=======
+>>>>>>> a53cedb134ce76a7733f9dd74446b6333239dfd8
+>>>>>>> f4d7350 (예약 기능 및 관련 컴포넌트 추가)
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3"
