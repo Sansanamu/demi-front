@@ -1,13 +1,4 @@
 import SaturationCard from '@/components/SaturationCard'
-<<<<<<< HEAD
-import EmptyReservationCard from '@/components/EmptyReservationCard'
-import ReservationCard from '@/components/ReservationCard'
-import EcoBanner from '@/components/EcoBanner'
-import { reservationData } from '@/data/reservationData'
-
-export default function Dashboard() {
-  const hasReservation = reservationData.length > 0
-=======
 // import EmptyReservationCard from '@/components/EmptyReservationCard'
 // import ReservationCard from '@/components/ReservationCard'
 import EcoBanner from '@/components/EcoBanner'
@@ -16,7 +7,6 @@ import ReservationList from '@/components/ReservationList'
 
 export default function Dashboard() {
   /* const hasReservation = reservationData.length > 0 */
->>>>>>> f4d7350 (예약 기능 및 관련 컴포넌트 추가)
 
   return (
     <>
@@ -49,15 +39,7 @@ export default function Dashboard() {
 
         {/* 예약 정보 카드 */}
         <div className="w-full mb-6">
-<<<<<<< HEAD
-          {hasReservation ? (
-            <ReservationCard data={reservationData[0]} />
-          ) : (
-            <EmptyReservationCard />
-          )}
-=======
           <ReservationList data={reservationData} />
->>>>>>> f4d7350 (예약 기능 및 관련 컴포넌트 추가)
         </div>
 
         {/* 에코 배너 */}
