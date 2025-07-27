@@ -10,9 +10,10 @@ import { sensorData as allSensorData } from '@/data/sensorData';
 import ReservationList from '@/components/ReservationList';
 import BackgroundLayout from '@/components/layout/BackgroundLayout';
 import MonthlyReservationCount from '@/components/MonthlyReservationCount';
+import useSessionUser from '@/hooks/useSessionUser';
 
 export default function Dashboard() {
-  const user_id = 'judy123';
+  const { user_id } = useSessionUser(); // 더미 데이터 - 세션에서 가져오기
 
   const [userReservations, setUserReservations] = useState<any[]>([]);
   const [sensorValue, setSensorValue] = useState<
@@ -53,7 +54,6 @@ export default function Dashboard() {
           <SaturationCard type="glass" value={glassValue ?? 0} />
           <SaturationCard type="plastic" value={plasticValue ?? 0} />
           <SaturationCard type="can" value={canValue ?? 0} />
-
         </div>
 
         {/* 섹션 제목 */}

@@ -28,11 +28,11 @@ export default function SaturationCard({ type, value }: SaturationCardProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'glass':
-        return <FaWineBottle className="w-6 h-6" />;
+        return <FaWineBottle size={96} className="w-6 h-6" />;
       case 'plastic':
-        return <FaBottleWater className="w-6 h-6" />;
+        return <FaBottleWater size={96}  className="w-6 h-6" />;
       case 'can':
-        return <GiCannedFish className="w-6 h-6" />;
+        return <GiCannedFish size={96}   className="w-6 h-6" />;
       default:
         return null;
     }

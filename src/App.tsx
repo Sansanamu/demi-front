@@ -5,6 +5,9 @@ import BottomNav from '@/components/BottomNav'
 import Dashboard from '@/pages/main/Dashboard'
 import ReservationFlow from '@/pages/reservation/ReservationFlow'
 import Login from '@/pages/auth/Login'
+import MyPage from './pages/mypage/Mypage'
+import ReservationHistory from '@/pages/mypage/ReservationHistory';
+import DeviceManagement from './pages/mypage/DeviceManagement'
 
 export default function App() {
   const location = useLocation()
@@ -27,6 +30,12 @@ export default function App() {
           
           {/* 예약 플로우 페이지 */}
           <Route path="/reservation" element= { <ReservationFlow onComplete={() => navigate('/dashboard')} /> }/>
+
+          {/* 마이페이지 */}
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/reservation-history" element={<ReservationHistory />} />
+          <Route path="/device" element={<DeviceManagement />} />
+
         </Routes>
       </MobileLayout>
       
