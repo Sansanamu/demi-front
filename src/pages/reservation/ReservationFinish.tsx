@@ -28,7 +28,7 @@ export default function ReservationFinish({type, date, time, onConfirm, onReset,
 
       {/* 이미지, 임시 */}
       <div className="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center">
-        🚛 (일러스트 자리)
+        🚛
       </div>
 
       {/* 버튼 */}

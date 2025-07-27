@@ -26,3 +26,6 @@ Thumbs.db
 
 # Build output
 build/
+
+#etc
+prjStatus.md

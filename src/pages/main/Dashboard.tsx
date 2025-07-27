@@ -1,36 +1,62 @@
-import SaturationCard from '@/components/SaturationCard'
-// import EmptyReservationCard from '@/components/EmptyReservationCard'
-// import ReservationCard from '@/components/ReservationCard'
-import EcoBanner from '@/components/EcoBanner'
-import { reservationData } from '@/data/reservationData'
-import ReservationList from '@/components/ReservationList'
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import SaturationCard from '@/components/SaturationCard';
+import EmptyReservationCard from '@/components/EmptyReservationCard';
+import EcoBanner from '@/components/EcoBanner';
+import { reservationData as allReservationData } from '@/data/reservationData';
+import { sensorData as allSensorData } from '@/data/sensorData';
+import ReservationList from '@/components/ReservationList';
+import BackgroundLayout from '@/components/layout/BackgroundLayout';
+import MonthlyReservationCount from '@/components/MonthlyReservationCount';
 
 export default function Dashboard() {
-  /* const hasReservation = reservationData.length > 0 */
+  const user_id = 'judy123';
+
+  const [userReservations, setUserReservations] = useState<any[]>([]);
+  const [sensorValue, setSensorValue] = useState<
+    { type: 'glass' | 'plastic' | 'can'; value: number }[] | null
+  >(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    try {
+      // 예약 정보 필터
+      const filteredReservations = allReservationData.filter(res => res.user_id === user_id);
+      setUserReservations(filteredReservations);
+
+      // 센서 데이터 필터
+      const sensor = allSensorData.find(data => data.user_id === user_id);
+      setSensorValue(sensor ? sensor.sensor_data : null);
+    } catch (err) {
+      console.error('데이터 로딩 실패:', err);
+      setError(true);
+    }
+  }, []);
+
+  const reservationCount = userReservations.length;
+
+  // 각 포화도 추출
+  const glassValue = sensorValue?.find(item => item.type === 'glass')?.value ?? null;
+  const plasticValue = sensorValue?.find(item => item.type === 'plastic')?.value ?? null;
+  const canValue = sensorValue?.find(item => item.type === 'can')?.value ?? null;
 
   return (
-    <>
-      {/* 유저 정보 알림 */}
-      <div className="w-full bg-primary rounded-t-lg h-[160px] pt-[70px] flex justify-center drop-shadow-sm">
-        <div className="w-full max-w-[393px] px-4 pt-4 pb-4">
-          <div className="bg-white px-4 py-4 rounded-[8px] drop-shadow-lg text-center text-sm text-gray-800">
-            <p>
-              <strong className="text-txgreen">주디</strong> 님, 이번 달 분리수거 횟수는{' '}
-              <span className="text-red-600 font-semibold">0회</span>입니다.
-            </p>
-          </div>
-        </div>
-      </div>
+    <BackgroundLayout>
+      {/* 최상단 고정 카드 */}
+      <MonthlyReservationCount user_id={user_id} count={reservationCount} />
 
-      <main className="flex-grow px-4 pt-6 pb-20">
+      <main className="flex-grow px-4 pb-20">
         {/* 포화도 카드 */}
         <div className="w-full flex justify-between gap-2 mb-6">
-          <SaturationCard type="glass" />
-          <SaturationCard type="plastic" />
-          <SaturationCard type="can" />
+          <SaturationCard type="glass" value={glassValue ?? 0} />
+          <SaturationCard type="plastic" value={plasticValue ?? 0} />
+          <SaturationCard type="can" value={canValue ?? 0} />
+
         </div>
 
-        {/* 포화도 섹션 제목 */}
+        {/* 섹션 제목 */}
         <div className="flex items-center justify-center gap-4 mb-2 h-[50px] pb-10">
           <div className="flex-grow h-px bg-primary" />
           <p className="text-sm font-semibold text-primary">포화도</p>
@@ -39,7 +65,13 @@ export default function Dashboard() {
 
         {/* 예약 정보 카드 */}
         <div className="w-full mb-6">
-          <ReservationList data={reservationData} />
+          {error ? (
+            <EmptyReservationCard />
+          ) : userReservations.length === 0 ? (
+            <EmptyReservationCard />
+          ) : (
+            <ReservationList data={userReservations} />
+          )}
         </div>
 
         {/* 에코 배너 */}
@@ -47,6 +79,6 @@ export default function Dashboard() {
           <EcoBanner />
         </div>
       </main>
-    </>
-  )
+    </BackgroundLayout>
+  );
 }

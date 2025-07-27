@@ -4,6 +4,7 @@ import BottomNav from '@/components/BottomNav'
 
 import Dashboard from '@/pages/main/Dashboard'
 import ReservationFlow from '@/pages/reservation/ReservationFlow'
+import Login from '@/pages/auth/Login'
 
 export default function App() {
   const location = useLocation()
@@ -17,7 +18,12 @@ export default function App() {
         <Routes>
           {/* 기본 대시보드로 리다이렉트 */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* 대시보드 페이지*/}
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* 로그인 페이지 */}
+          <Route path="/login" element={<Login />} />
           
           {/* 예약 플로우 페이지 */}
           <Route path="/reservation" element= { <ReservationFlow onComplete={() => navigate('/dashboard')} /> }/>

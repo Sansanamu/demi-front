@@ -1,20 +1,21 @@
-//더미데이터, 데이터 연동 후 삭제 예정
+// reservationData.ts
 
-export type Reservation = {
-  type: 'plastic' | 'glass' | 'can'
-  date: string
-  time: string
+export interface Reservation {
+  user_id: string;
+  collection_date: any;
+  type_of_garbage: 'plastic' | 'glass' | 'can';
 }
 
+// 더미데이터, 데이터 연동 후 삭제 예정
 export const reservationData: Reservation[] = [
   {
-    type: 'plastic',
-    date: '8월 1일',
-    time: '오후 8시',
+    user_id: 'judy123',
+    collection_date: '2025-08-01T 10:10:00',
+    type_of_garbage: 'glass',
   },
   {
-    type: 'glass',
-    date: '8월 2일',
-    time: '오후 9시',
+    user_id: 'judy123',
+    collection_date: '2025-08-03T 14:20:00',
+    type_of_garbage: 'can',
   },
-]
+];
