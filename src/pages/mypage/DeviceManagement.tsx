@@ -31,8 +31,13 @@ export default function DeviceManagement() {
           </div>
           <p className="text-sm whitespace-pre-line mb-4">{dummyDevice.address}</p>
           <div className="flex gap-3">
-            <button className="bg-white text-primary text-xs px-3 py-1 rounded">주소 변경</button>
-            <button className="bg-white text-red-500 text-xs px-3 py-1 rounded">기기 삭제</button>
+            <button
+              className="px-3 py-1 bg-white text-green-700 rounded"
+              onClick={() => navigate('/address-search')}
+            >
+              주소 변경
+            </button>
+            <button className="bg-white text-red-500 text-sm px-3 py-1 rounded">기기 삭제</button>
           </div>
         </div>
       </main>

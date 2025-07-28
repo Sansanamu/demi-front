@@ -38,10 +38,10 @@ export default function ReservationHistory() {
 
   return (
     <BackgroundLayout>
-      <main className="flex flex-col items-center pt-6 pb-10 px-4 text-primary w-full">
+      <main className="flex flex-col items-center pt-10 pb-10 px-4 text-primary w-full">
         {/* 헤더 */}
         <div className="w-full pt-10 relative flex items-center justify-center text-white mb-6">
-          <button onClick={() => navigate(-1)} className="absolute left-0">
+          <button onClick={() => navigate(-1)} className="absolute left-3">
             <MdArrowBack size={24} />
           </button>
           <h1 className="text-lg font-semibold">예약 내역</h1>

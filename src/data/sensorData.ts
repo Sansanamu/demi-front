@@ -13,9 +13,9 @@ export const sensorData: SensorData[] = [
   {
     user_id: 'judy123',
     sensor_data: [
-      { type: 'glass', value: 76 },
-      { type: 'plastic', value: 42 },
-      { type: 'can', value: 89 },
+      { type: 'glass', value: 40 },
+      { type: 'plastic', value: 80},
+      { type: 'can', value: 20 },
     ],
   },
   {

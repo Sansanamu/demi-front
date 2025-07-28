@@ -8,6 +8,7 @@ import Login from '@/pages/auth/Login'
 import MyPage from './pages/mypage/Mypage'
 import ReservationHistory from '@/pages/mypage/ReservationHistory';
 import DeviceManagement from './pages/mypage/DeviceManagement'
+// import AddressSearch from './pages/mypage/AddressSearch'
 
 export default function App() {
   const location = useLocation()
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/reservation-history" element={<ReservationHistory />} />
           <Route path="/device" element={<DeviceManagement />} />
+          {/* <Route path="/address-search" element={<AddressSearch />} /> */}
 
         </Routes>
       </MobileLayout>
