@@ -6,7 +6,7 @@ import Dashboard from '@/pages/main/Dashboard'
 import ReservationFlow from '@/pages/reservation/ReservationFlow'
 import Login from '@/pages/auth/Login'
 import MyPage from './pages/mypage/Mypage'
-import ReservationHistory from '@/pages/mypage/ReservationHistory';
+import ReservationHistory from '@/pages/mypage/ReservationHistory'
 import DeviceManagement from './pages/mypage/DeviceManagement'
 // import AddressSearch from './pages/mypage/AddressSearch'
 
@@ -20,8 +20,8 @@ export default function App() {
     <>
       <MobileLayout>
         <Routes>
-          {/* 기본 대시보드로 리다이렉트 */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* 기본 로그인 화면으로 리다이렉트 */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* 대시보드 페이지*/}
           <Route path="/dashboard" element={<Dashboard />} />
@@ -30,7 +30,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           
           {/* 예약 플로우 페이지 */}
-          <Route path="/reservation" element= { <ReservationFlow onComplete={() => navigate('/dashboard')} /> }/>
+          <Route path="/reservation" element={ <ReservationFlow onComplete={() => navigate('/dashboard')} /> }/>
 
           {/* 마이페이지 */}
           <Route path="/mypage" element={<MyPage />} />

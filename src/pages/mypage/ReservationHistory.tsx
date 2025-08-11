@@ -1,36 +1,61 @@
 import { MdArrowBack } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import BackgroundLayout from '@/components/layout/BackgroundLayout';
+import { API_BASE_URL } from '@/config';
 
+// ReservationItem 타입 정의 (서버 응답 구조에 맞게 수정!)
 type ReservationItem = {
   id: number;
-  date: string; // 'YYYY-MM-DD'
-  time: string; // '오후 8시' 등
-  type: '플라스틱' | '캔' | '유리';
+  collection_date: string; // "2025-04-29T20:00:00"
+  type_of_garbage: 'plastic' | 'glass' | 'can';
   weight?: number;
   price?: number;
-  status: '예정' | '완료';
+  status: 'reserved' | 'completed' | 'cancelled'; // 서버값 기준
 };
 
-const dummyReservations: ReservationItem[] = [
-  { id: 1, date: '2025-04-29', time: '오후 8시', type: '플라스틱', status: '예정' },
-  { id: 2, date: '2025-04-01', time: '오후 8시', type: '캔', weight: 420, price: 4200, status: '완료' },
-  { id: 3, date: '2025-03-29', time: '오후 7시', type: '유리', weight: 380, price: 3800, status: '완료' },
-  { id: 4, date: '2025-03-15', time: '오후 8시', type: '플라스틱', weight: 500, price: 5000, status: '완료' },
-  { id: 5, date: '2025-03-01', time: '오후 7시', type: '캔', weight: 200, price: 2000, status: '완료' },
-];
+// 한글 표시용 라벨 매핑
+const typeLabel: Record<string, string> = {
+  plastic: '플라스틱',
+  glass: '유리',
+  can: '캔',
+};
+
+const statusLabel: Record<string, string> = {
+  reserved: '예정',
+  completed: '완료',
+  cancelled: '취소됨',
+};
 
 const formatMonth = (dateStr: string) => {
-  const [year, month] = dateStr.split('-');
-  return `${year}년 ${Number(month)}월`;
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+};
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+};
+
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 };
 
 export default function ReservationHistory() {
   const navigate = useNavigate();
+  const [reservations, setReservations] = useState<ReservationItem[]>([]);
 
-  // 월별로 그룹화
-  const grouped = dummyReservations.reduce((acc, cur) => {
-    const monthKey = formatMonth(cur.date);
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/reservations/`)
+      .then(res => res.json())
+      .then(data => setReservations(data))
+      .catch(() => setReservations([])); // 오류 시 빈 배열
+  }, []);
+
+  // 월별 그룹화
+  const grouped = reservations.reduce((acc, cur) => {
+    const monthKey = formatMonth(cur.collection_date);
     if (!acc[monthKey]) acc[monthKey] = [];
     acc[monthKey].push(cur);
     return acc;
@@ -60,26 +85,28 @@ export default function ReservationHistory() {
                   >
                     {/* 종류 */}
                     <div className="min-w-[70px] h-[50px] flex items-center justify-center rounded-lg bg-primary text-white font-semibold mr-4 px-2 text-sm">
-                      {item.type}
+                      {typeLabel[item.type_of_garbage]}
                     </div>
                     {/* 텍스트 */}
                     <div className="flex-1 text-sm text-gray-700">
-                      <p className="font-medium">{item.date} {item.time}</p>
+                      <p className="font-medium">
+                        {formatDate(item.collection_date)} {formatTime(item.collection_date)}
+                      </p>
                       <p className="text-xs">
-                        {item.status === '예정'
+                        {statusLabel[item.status] === '예정'
                           ? '기사님이 방문 예정이에요'
                           : '기사님이 방문했어요!'}
                       </p>
                     </div>
                     {/* 결과 */}
                     <div className="text-right text-xs whitespace-nowrap">
-                      {item.status === '완료' && (
+                      {item.status === 'completed' && (
                         <>
                           <p className="text-purple-700 font-semibold">{item.weight}g</p>
                           <p className="text-black text-sm font-bold">{item.price?.toLocaleString()}원</p>
                         </>
                       )}
-                      {item.status === '예정' && (
+                      {item.status === 'reserved' && (
                         <button className="text-red-500 font-semibold text-sm">취소하기</button>
                       )}
                     </div>

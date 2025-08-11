@@ -29,3 +29,6 @@ build/
 
 #etc
 prjStatus.md
+
+.env
+.env.*

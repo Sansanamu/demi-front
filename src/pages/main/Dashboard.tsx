@@ -1,62 +1,173 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import SaturationCard from '@/components/SaturationCard';
 import EmptyReservationCard from '@/components/EmptyReservationCard';
 import EcoBanner from '@/components/EcoBanner';
-import { reservationData as allReservationData } from '@/data/reservationData';
-import { sensorData as allSensorData } from '@/data/sensorData';
 import ReservationList from '@/components/ReservationList';
 import BackgroundLayout from '@/components/layout/BackgroundLayout';
 import MonthlyReservationCount from '@/components/MonthlyReservationCount';
-import useSessionUser from '@/hooks/useSessionUser';
+import { API_BASE_URL } from '@/config';
+// import useSessionUser from '@/hooks/useSessionUser'; // 현재 안 씀
+
+// 예약 타입
+export interface Reservation {
+  id: number;
+  collection_date: string;
+  type_of_garbage: 'glass' | 'plastic' | 'can';
+  status: string;
+}
+
+// 포화도 타입
+type BinType = 'glass' | 'plastic' | 'can';
+type SaturationItem = { type: BinType; value: number };
+
+const clamp01 = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+};
+
+// /saturation 응답을 배열 형태로 정규화
+function normalizeSaturation(resp: unknown): SaturationItem[] {
+  // 1) 객체 형태: { glass: 35, plastic: 70, can: 50 }
+  if (
+    resp &&
+    typeof resp === 'object' &&
+    !Array.isArray(resp) &&
+    ['glass', 'plastic', 'can'].every(k => k in (resp as any))
+  ) {
+    const o = resp as Record<string, number>;
+    return (['glass', 'plastic', 'can'] as BinType[]).map(t => ({
+      type: t,
+      value: clamp01(o[t]),
+    }));
+  }
+
+  // 2) 배열 형태: [ { glass, plastic, can, created_at }, ... ]  (최신순)
+  if (Array.isArray(resp)) {
+    const latest = resp[0];
+    if (
+      latest &&
+      typeof latest === 'object' &&
+      ['glass', 'plastic', 'can'].every(k => k in (latest as any))
+    ) {
+      const o = latest as Record<string, number>;
+      return (['glass', 'plastic', 'can'] as BinType[]).map(t => ({
+        type: t,
+        value: clamp01(o[t]),
+      }));
+    }
+
+    // 2-b) 배열이 [{ type, value }] 형태라면 (혹시 다른 엔드포인트용)
+    const map = new Map<BinType, number>();
+    for (const it of resp as any[]) {
+      if (it && (it.type === 'glass' || it.type === 'plastic' || it.type === 'can')) {
+        map.set(it.type, clamp01(it.value));
+      }
+    }
+    if (map.size) {
+      return (['glass', 'plastic', 'can'] as BinType[]).map(t => ({
+        type: t,
+        value: map.get(t) ?? 0,
+      }));
+    }
+  }
+
+  // 모르는 형태 → 0
+  return (['glass', 'plastic', 'can'] as BinType[]).map(t => ({ type: t, value: 0 }));
+}
 
 export default function Dashboard() {
-  const { user_id } = useSessionUser(); // 더미 데이터 - 세션에서 가져오기
+  // const { user_id } = useSessionUser(); // 현재 미사용
+  const nickname = typeof window !== 'undefined' ? localStorage.getItem('nickname') || '회원' : '회원';
 
-  const [userReservations, setUserReservations] = useState<any[]>([]);
-  const [sensorValue, setSensorValue] = useState<
-    { type: 'glass' | 'plastic' | 'can'; value: number }[] | null
-  >(null);
+  const [userReservations, setUserReservations] = useState<Reservation[]>([]);
+  const [sensorValue, setSensorValue] = useState<SaturationItem[] | null>(null);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    try {
-      // 예약 정보 필터
-      const filteredReservations = allReservationData.filter(res => res.user_id === user_id);
-      setUserReservations(filteredReservations);
+  const abortRef = useRef<AbortController | null>(null);
 
-      // 센서 데이터 필터
-      const sensor = allSensorData.find(data => data.user_id === user_id);
-      setSensorValue(sensor ? sensor.sensor_data : null);
-    } catch (err) {
-      console.error('데이터 로딩 실패:', err);
+  const loadReservations = async () => {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+    try {
+      const res = await fetch(`${API_BASE_URL}/reservations/`, {
+        credentials: 'include',
+        signal: ac.signal,
+      });
+      if (!res.ok) throw new Error('예약 데이터 불러오기 실패');
+      const data = await res.json();
+      setUserReservations(Array.isArray(data) ? data : []);
+      setError(false);
+    } catch {
       setError(true);
+      setUserReservations([]);
     }
+  };
+
+  const loadSaturation = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/ultrasound/saturation/`, {
+      credentials: 'include',
+      cache: 'no-store', // 혹시 모를 캐싱 방지
+    })
+      if (!res.ok) throw new Error('포화도 불러오기 실패');
+      const data = await res.json();
+      setSensorValue(normalizeSaturation(data));
+    } catch {
+      // 실패 시 0으로 표기
+      setSensorValue(normalizeSaturation(null));
+    }
+  };
+
+  // 최초 로드
+  useEffect(() => {
+    loadReservations();
+    loadSaturation();
+    return () => abortRef.current?.abort();
+  }, []);
+
+  // 대시보드로 다시 돌아올 때마다 갱신
+  useEffect(() => {
+    const revalidate = () => {
+      if (document.visibilityState === 'visible') {
+        loadReservations();
+        loadSaturation();
+      }
+    };
+    const onFocus = () => revalidate();
+    const onVisible = () => revalidate();
+    const onOnline = () => revalidate();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', onOnline);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', onOnline);
+    };
   }, []);
 
   const reservationCount = userReservations.length;
 
-  // 각 포화도 추출
-  const glassValue = sensorValue?.find(item => item.type === 'glass')?.value ?? null;
-  const plasticValue = sensorValue?.find(item => item.type === 'plastic')?.value ?? null;
-  const canValue = sensorValue?.find(item => item.type === 'can')?.value ?? null;
+  const getValue = (t: BinType) =>
+    sensorValue?.find(item => item.type === t)?.value ?? 0;
 
   return (
     <BackgroundLayout>
-      {/* 최상단 고정 카드 */}
-      <MonthlyReservationCount user_id={user_id} count={reservationCount} />
+      {/* MonthlyReservationCount는 count만 받음 */}
+      <MonthlyReservationCount count={reservationCount} />
 
       <main className="flex-grow px-4 pb-20">
         {/* 포화도 카드 */}
         <div className="w-full flex justify-between gap-2 mb-6">
-          <SaturationCard type="glass" value={glassValue ?? 0} />
-          <SaturationCard type="plastic" value={plasticValue ?? 0} />
-          <SaturationCard type="can" value={canValue ?? 0} />
+          <SaturationCard type="glass" value={getValue('glass')} />
+          <SaturationCard type="plastic" value={getValue('plastic')} />
+          <SaturationCard type="can" value={getValue('can')} />
         </div>
 
-        {/* 섹션 제목 */}
         <div className="flex items-center justify-center gap-4 mb-2 h-[50px] pb-10">
           <div className="flex-grow h-px bg-primary" />
           <p className="text-sm font-semibold text-primary">포화도</p>
@@ -74,7 +185,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* 에코 배너 */}
         <div className="w-full">
           <EcoBanner />
         </div>
